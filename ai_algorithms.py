@@ -371,10 +371,38 @@ def iter_search_demo(
                             if term > parent.best_value:
                                 parent.best_value = int(term)
                                 parent.best_move = fr.incoming_move
+                                emit(
+                                    {
+                                        "type": "update",
+                                        "node_id": parent.node_id,
+                                        "parent_id": parent.parent_id,
+                                        "depth": depth - parent.depth_left,
+                                        "player": parent.current_player,
+                                        "move": parent.incoming_move,
+                                        "alpha": None,
+                                        "beta": None,
+                                        "value": int(parent.best_value),
+                                        "note": "best↑",
+                                    }
+                                )
                         else:
                             if term < parent.best_value:
                                 parent.best_value = int(term)
                                 parent.best_move = fr.incoming_move
+                                emit(
+                                    {
+                                        "type": "update",
+                                        "node_id": parent.node_id,
+                                        "parent_id": parent.parent_id,
+                                        "depth": depth - parent.depth_left,
+                                        "player": parent.current_player,
+                                        "move": parent.incoming_move,
+                                        "alpha": None,
+                                        "beta": None,
+                                        "value": int(parent.best_value),
+                                        "note": "best↓",
+                                    }
+                                )
                     continue
 
                 if fr.depth_left == 0:
@@ -403,10 +431,38 @@ def iter_search_demo(
                             if val > parent.best_value:
                                 parent.best_value = int(val)
                                 parent.best_move = fr.incoming_move
+                                emit(
+                                    {
+                                        "type": "update",
+                                        "node_id": parent.node_id,
+                                        "parent_id": parent.parent_id,
+                                        "depth": depth - parent.depth_left,
+                                        "player": parent.current_player,
+                                        "move": parent.incoming_move,
+                                        "alpha": None,
+                                        "beta": None,
+                                        "value": int(parent.best_value),
+                                        "note": "best↑",
+                                    }
+                                )
                         else:
                             if val < parent.best_value:
                                 parent.best_value = int(val)
                                 parent.best_move = fr.incoming_move
+                                emit(
+                                    {
+                                        "type": "update",
+                                        "node_id": parent.node_id,
+                                        "parent_id": parent.parent_id,
+                                        "depth": depth - parent.depth_left,
+                                        "player": parent.current_player,
+                                        "move": parent.incoming_move,
+                                        "alpha": None,
+                                        "beta": None,
+                                        "value": int(parent.best_value),
+                                        "note": "best↓",
+                                    }
+                                )
                     continue
 
                 if fr.i >= len(fr.moves):
@@ -574,6 +630,22 @@ def iter_search_demo(
                             parent.value = child_val
                             parent.best_move = fr.incoming_move
                         parent.beta = min(parent.beta, parent.value)
+
+                    emit(
+                        {
+                            "type": "update",
+                            "node_id": parent.node_id,
+                            "parent_id": parent.parent_id,
+                            "depth": depth - parent.depth_left,
+                            "player": parent.current_player,
+                            "move": parent.incoming_move,
+                            "alpha": int(parent.alpha if parent.alpha != -INF else -1_000_000_000),
+                            "beta": int(parent.beta if parent.beta != INF else 1_000_000_000),
+                            "value": int(parent.value if parent.value not in (-INF, INF) else 0),
+                            "note": "update",
+                        }
+                    )
+
                     if parent.alpha >= parent.beta:
                         parent.prunes += 1
                         emit(
@@ -624,6 +696,22 @@ def iter_search_demo(
                             parent.value = int(val)
                             parent.best_move = fr.incoming_move
                         parent.beta = min(parent.beta, parent.value)
+
+                    emit(
+                        {
+                            "type": "update",
+                            "node_id": parent.node_id,
+                            "parent_id": parent.parent_id,
+                            "depth": depth - parent.depth_left,
+                            "player": parent.current_player,
+                            "move": parent.incoming_move,
+                            "alpha": int(parent.alpha if parent.alpha != -INF else -1_000_000_000),
+                            "beta": int(parent.beta if parent.beta != INF else 1_000_000_000),
+                            "value": int(parent.value if parent.value not in (-INF, INF) else 0),
+                            "note": "update",
+                        }
+                    )
+
                     if parent.alpha >= parent.beta:
                         parent.prunes += 1
                         emit(
@@ -674,6 +762,22 @@ def iter_search_demo(
                             parent.value = int(child_val)
                             parent.best_move = fr.incoming_move
                         parent.beta = min(parent.beta, parent.value)
+
+                    emit(
+                        {
+                            "type": "update",
+                            "node_id": parent.node_id,
+                            "parent_id": parent.parent_id,
+                            "depth": depth - parent.depth_left,
+                            "player": parent.current_player,
+                            "move": parent.incoming_move,
+                            "alpha": int(parent.alpha if parent.alpha != -INF else -1_000_000_000),
+                            "beta": int(parent.beta if parent.beta != INF else 1_000_000_000),
+                            "value": int(parent.value if parent.value not in (-INF, INF) else 0),
+                            "note": "update",
+                        }
+                    )
+
                     if parent.alpha >= parent.beta:
                         parent.prunes += 1
                         emit(

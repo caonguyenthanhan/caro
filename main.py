@@ -69,6 +69,7 @@ class GameController(QObject):
         self.window.demo_start_clicked.connect(self.start_demo)
         self.window.demo_pause_clicked.connect(self.toggle_demo_pause)
         self.window.demo_step_clicked.connect(self.demo_step)
+        self.window.demo_jump_clicked.connect(self.demo_jump)
         self.window.demo_clear_clicked.connect(self.clear_demo)
 
         self.thread = QThread()
@@ -241,6 +242,16 @@ class GameController(QObject):
             return
         self._demo_tick()
 
+    def demo_jump(self) -> None:
+        if self.demo_preparing:
+            return
+        if self.demo_timer.isActive():
+            return
+        for _ in range(50):
+            if self.demo_index >= len(self.demo_events):
+                break
+            self._demo_tick()
+
     def clear_demo(self) -> None:
         if self.demo_timer.isActive():
             self.demo_timer.stop()
@@ -294,10 +305,13 @@ class GameController(QObject):
         )
 
         etype = ev.get("type")
-        if etype in ("enter", "leaf", "exit", "prune"):
+        if etype in ("enter", "leaf", "exit", "prune", "update"):
             self.window.append_demo_log(
                 f"#{node_id} {etype} d={depth} p={'X' if player==1 else 'O'} move={move} a={alpha} b={beta} v={value} {note}"
             )
+
+        if self.demo_events:
+            self.window.set_demo_status(f"Demo: {self.demo_index}/{len(self.demo_events)}")
 
     def on_ai_finished(self, row: int, col: int, time_ms: float, nodes: int, score: int) -> None:
         self.thinking = False

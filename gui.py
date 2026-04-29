@@ -3,8 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QColor, QFont, QLinearGradient, QPainter, QPen
+from PyQt6.QtGui import QColor, QFont, QLinearGradient, QPainter, QPen, QBrush
 from PyQt6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QFrame,
     QGroupBox,
@@ -162,6 +163,7 @@ class MainWindow(QMainWindow):
     demo_start_clicked = pyqtSignal()
     demo_pause_clicked = pyqtSignal()
     demo_step_clicked = pyqtSignal()
+    demo_jump_clicked = pyqtSignal()
     demo_clear_clicked = pyqtSignal()
 
     def __init__(self, board: CaroBoard) -> None:
@@ -274,13 +276,20 @@ class MainWindow(QMainWindow):
         self.demo_speed.setCurrentText("Vừa")
         demo_layout.addWidget(self._labeled("Tốc độ", self.demo_speed))
 
+        self.demo_autoscroll = QCheckBox("Auto-scroll log")
+        self.demo_autoscroll.setChecked(True)
+        self.demo_autoscroll.setStyleSheet("color: #C9D1D9;")
+        demo_layout.addWidget(self.demo_autoscroll)
+
         self.demo_start_btn = QPushButton("Run Demo")
         self.demo_pause_btn = QPushButton("Pause")
         self.demo_step_btn = QPushButton("Step")
+        self.demo_jump_btn = QPushButton(">>")
         self.demo_clear_btn = QPushButton("Clear")
         self.demo_start_btn.clicked.connect(self.demo_start_clicked)
         self.demo_pause_btn.clicked.connect(self.demo_pause_clicked)
         self.demo_step_btn.clicked.connect(self.demo_step_clicked)
+        self.demo_jump_btn.clicked.connect(self.demo_jump_clicked)
         self.demo_clear_btn.clicked.connect(self.demo_clear_clicked)
 
         demo_btn_row = QHBoxLayout()
@@ -288,6 +297,7 @@ class MainWindow(QMainWindow):
         demo_btn_row.addWidget(self.demo_start_btn)
         demo_btn_row.addWidget(self.demo_pause_btn)
         demo_btn_row.addWidget(self.demo_step_btn)
+        demo_btn_row.addWidget(self.demo_jump_btn)
         demo_btn_row.addWidget(self.demo_clear_btn)
         demo_layout.addLayout(demo_btn_row)
 
@@ -299,6 +309,7 @@ class MainWindow(QMainWindow):
         self.demo_tree = QTreeWidget()
         self.demo_tree.setObjectName("DemoTree")
         self.demo_tree.setHeaderLabels(["Node", "Move", "D", "P", "α", "β", "Val", "Note"])
+        self.demo_tree.setAlternatingRowColors(True)
         self.demo_tree.setColumnWidth(0, 56)
         self.demo_tree.setColumnWidth(1, 70)
         self.demo_tree.setColumnWidth(2, 28)
@@ -411,6 +422,7 @@ class MainWindow(QMainWindow):
         self.demo_speed.setEnabled(not running)
         self.demo_pause_btn.setEnabled(running)
         self.demo_step_btn.setEnabled(True)
+        self.demo_jump_btn.setEnabled(True)
 
     def clear_demo(self) -> None:
         self.demo_tree.clear()
@@ -419,6 +431,9 @@ class MainWindow(QMainWindow):
 
     def append_demo_log(self, text: str) -> None:
         self.demo_log.appendPlainText(text)
+        if self.demo_autoscroll.isChecked():
+            bar = self.demo_log.verticalScrollBar()
+            bar.setValue(bar.maximum())
 
     def set_demo_status(self, text: str) -> None:
         self.demo_status.setText(text)
@@ -461,6 +476,15 @@ class MainWindow(QMainWindow):
         item.setText(5, "-" if beta is None else str(beta))
         item.setText(6, "-" if value is None else str(value))
         item.setText(7, note)
+
+        if note in ("cutoff", "prune"):
+            bg = QBrush(QColor("#3B1D1D"))
+            for col in range(8):
+                item.setBackground(col, bg)
+        elif note in ("best↑", "best↓"):
+            bg = QBrush(QColor("#0B2A3A"))
+            for col in range(8):
+                item.setBackground(col, bg)
         self.demo_tree.expandToDepth(2)
 
     def update_stats(self, algorithm: str, time_ms: float | None, nodes: int | None, score: int | None) -> None:
